@@ -13,6 +13,7 @@ import { ArrowLeft, MapPin, Calendar, User, Gavel, Phone, Mail } from 'lucide-re
 import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/formatters'
 import { PRODUCT_CONDITIONS, PRODUCT_CATEGORIES } from '@/lib/types'
 import type { Product, Bid } from '@/lib/types'
+import { BidActions } from '@/components/bid-actions'
 
 interface ProductPageProps {
   params: Promise<{ id: string }>
@@ -287,31 +288,5 @@ function BidCard({ bid, productId }: { bid: Bid; productId: string }) {
         )}
       </CardContent>
     </Card>
-  )
-}
-
-function BidActions({ bidId, productId }: { bidId: string; productId: string }) {
-  return (
-    <form className="flex gap-2">
-      <input type="hidden" name="bidId" value={bidId} />
-      <input type="hidden" name="productId" value={productId} />
-      <Button 
-        type="submit" 
-        formAction="/api/bids/accept" 
-        size="sm" 
-        className="flex-1"
-      >
-        Aceitar
-      </Button>
-      <Button 
-        type="submit" 
-        formAction="/api/bids/reject" 
-        variant="outline" 
-        size="sm" 
-        className="flex-1"
-      >
-        Rejeitar
-      </Button>
-    </form>
   )
 }

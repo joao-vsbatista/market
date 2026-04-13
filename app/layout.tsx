@@ -7,7 +7,7 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Relance - Marketplace de Usados',
+  title: 'ReCicloMarket',
   description: 'Compre e venda materiais usados com sistema de lances. Encontre as melhores ofertas perto de você.',
   generator: 'v0.app',
   keywords: ['marketplace', 'usados', 'lances', 'compra', 'venda', 'brasil'],
