@@ -219,6 +219,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   sellerId={product.seller_id}
                   isAuthenticated={!!user}
                   userId={user?.id}
+                  acceptsCash={product.accepts_cash}
+                  acceptsTrade={product.accepts_trade}
                 />
               )}
             </div>

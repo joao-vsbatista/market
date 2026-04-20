@@ -12,41 +12,37 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, BRAZILIAN_STATES } from '@/lib/types'
-import type { ProductCondition } from '@/lib/types'
+
+const ALL_VALUE = 'all'
 
 export function ProductFilters() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
-  
+
   const [search, setSearch] = useState(searchParams.get('q') || '')
-  const [category, setCategory] = useState(searchParams.get('categoria') || '')
-  const [condition, setCondition] = useState(searchParams.get('condicao') || '')
-  const [state, setState] = useState(searchParams.get('estado') || '')
+  const [category, setCategory] = useState(searchParams.get('categoria') || ALL_VALUE)
+  const [condition, setCondition] = useState(searchParams.get('condicao') || ALL_VALUE)
+  const [state, setState] = useState(searchParams.get('estado') || ALL_VALUE)
   const [minPrice, setMinPrice] = useState(searchParams.get('preco_min') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('preco_max') || '')
 
   const createQueryString = useCallback((params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams.toString())
-    
     Object.entries(params).forEach(([key, value]) => {
-      if (value) {
+      if (value && value !== ALL_VALUE) {
         newParams.set(key, value)
       } else {
         newParams.delete(key)
       }
     })
-    
     return newParams.toString()
   }, [searchParams])
 
@@ -71,16 +67,21 @@ export function ProductFilters() {
 
   const clearFilters = () => {
     setSearch('')
-    setCategory('')
-    setCondition('')
-    setState('')
+    setCategory(ALL_VALUE)
+    setCondition(ALL_VALUE)
+    setState(ALL_VALUE)
     setMinPrice('')
     setMaxPrice('')
     router.push('/produtos')
     setOpen(false)
   }
 
-  const hasActiveFilters = category || condition || state || minPrice || maxPrice
+  const hasActiveFilters =
+    (category && category !== ALL_VALUE) ||
+    (condition && condition !== ALL_VALUE) ||
+    (state && state !== ALL_VALUE) ||
+    minPrice ||
+    maxPrice
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -97,10 +98,13 @@ export function ProductFilters() {
         </div>
         <Button type="submit">Buscar</Button>
       </form>
-      
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="gap-2">
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="gap-2"
+          >
             <SlidersHorizontal className="h-4 w-4" />
             Filtros
             {hasActiveFilters && (
@@ -109,16 +113,14 @@ export function ProductFilters() {
               </span>
             )}
           </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Filtros</SheetTitle>
-            <SheetDescription>
-              Refine sua busca usando os filtros abaixo
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="mt-6 flex flex-col gap-6">
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-80 p-4"
+          align="end"
+        >
+          <div className="flex flex-col gap-4">
+            <p className="font-semibold text-sm">Filtros</p>
+
             <div className="grid gap-2">
               <Label>Categoria</Label>
               <Select value={category} onValueChange={setCategory}>
@@ -126,16 +128,14 @@ export function ProductFilters() {
                   <SelectValue placeholder="Todas as categorias" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value={ALL_VALUE}>Todas</SelectItem>
                   {PRODUCT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Condição</Label>
               <Select value={condition} onValueChange={setCondition}>
@@ -143,16 +143,14 @@ export function ProductFilters() {
                   <SelectValue placeholder="Qualquer condição" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Qualquer</SelectItem>
+                  <SelectItem value={ALL_VALUE}>Qualquer</SelectItem>
                   {Object.entries(PRODUCT_CONDITIONS).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Estado</Label>
               <Select value={state} onValueChange={setState}>
@@ -160,16 +158,14 @@ export function ProductFilters() {
                   <SelectValue placeholder="Todos os estados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value={ALL_VALUE}>Todos</SelectItem>
                   {BRAZILIAN_STATES.map((uf) => (
-                    <SelectItem key={uf} value={uf}>
-                      {uf}
-                    </SelectItem>
+                    <SelectItem key={uf} value={uf}>{uf}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Faixa de preço</Label>
               <div className="flex gap-2">
@@ -187,8 +183,8 @@ export function ProductFilters() {
                 />
               </div>
             </div>
-            
-            <div className="flex flex-col gap-2 pt-4">
+
+            <div className="flex flex-col gap-2 pt-2">
               <Button onClick={applyFilters}>Aplicar Filtros</Button>
               {hasActiveFilters && (
                 <Button variant="ghost" onClick={clearFilters} className="gap-2">
@@ -198,8 +194,8 @@ export function ProductFilters() {
               )}
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

@@ -1,15 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
+import { Space_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'] })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'ReCicloMarket',
   description: 'Compre e venda materiais usados com sistema de lances. Encontre as melhores ofertas perto de você.',
-  generator: 'v0.app',
   keywords: ['marketplace', 'usados', 'lances', 'compra', 'venda', 'brasil'],
 }
 
@@ -26,10 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${geist.className} antialiased min-h-screen bg-background`}>
+      <body className={`${spaceGrotesk.className} antialiased min-h-screen bg-background`}>
         {children}
         <Toaster position="top-right" richColors />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )

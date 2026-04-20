@@ -1,5 +1,6 @@
 'use client'
 
+import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -39,6 +40,8 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
   const [minPrice, setMinPrice] = useState('')
   const [city, setCity] = useState(userCity || '')
   const [state, setState] = useState(userState || '')
+  const [acceptsCash, setAcceptsCash] = useState(true)
+  const [acceptsTrade, setAcceptsTrade] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +58,11 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
 
     setIsLoading(true)
 
+    if (!acceptsCash && !acceptsTrade) {
+      toast.error('Selecione pelo menos uma forma de lance aceita')
+      return
+    }
+
     try {
       const supabase = createClient()
       
@@ -70,6 +78,8 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
           min_price: parseFloat(minPrice),
           city,
           state,
+          accepts_cash: acceptsCash,
+          accepts_trade: acceptsTrade,
         })
         .select()
         .single()
@@ -200,6 +210,34 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+  <CardHeader>
+    <CardTitle>Formas de Lance Aceitas</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="flex items-center justify-between rounded-lg border border-border p-4">
+      <div>
+        <p className="font-medium text-sm">💰 Dinheiro</p>
+        <p className="text-xs text-muted-foreground">Aceitar lances em dinheiro</p>
+      </div>
+      <Switch
+        checked={acceptsCash}
+        onCheckedChange={setAcceptsCash}
+      />
+    </div>
+    <div className="flex items-center justify-between rounded-lg border border-border p-4">
+      <div>
+        <p className="font-medium text-sm">📦 Troca por produto</p>
+        <p className="text-xs text-muted-foreground">Aceitar lances com produtos do inventário</p>
+      </div>
+      <Switch
+        checked={acceptsTrade}
+        onCheckedChange={setAcceptsTrade}
+      />
+    </div>
+  </CardContent>
+</Card>
 
       <Card>
         <CardHeader>
