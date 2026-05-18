@@ -126,6 +126,33 @@ export function BidForm({
 
       if (error) throw error
 
+            // Criar conversa automaticamente
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('bid_id', (await supabase.from('bids').select('id').eq('product_id', productId).eq('bidder_id', user.id).single()).data?.id || '')
+        .single()
+
+      if (!existingConv) {
+        const { data: newBid } = await supabase
+          .from('bids')
+          .select('id')
+          .eq('product_id', productId)
+          .eq('bidder_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (newBid) {
+          await supabase.from('conversations').insert({
+            product_id: productId,
+            bid_id: newBid.id,
+            buyer_id: user.id,
+            seller_id: sellerId,
+          })
+        }
+      }
+
       if (selectedItem) {
         await supabase
           .from('inventory_items')

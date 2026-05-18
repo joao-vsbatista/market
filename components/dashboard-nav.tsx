@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { User, Package, Gavel, Settings, Archive } from 'lucide-react'
+import { User, Package, Gavel, Settings, Archive, MessageSquare } from 'lucide-react'
 
 const navItems = [
   {
@@ -30,6 +30,11 @@ const navItems = [
     href: '/dashboard/perfil',
     label: 'Editar Perfil',
     icon: Settings,
+  },
+  {
+  href: '/dashboard/conversas',
+  label: 'Conversas',
+  icon: MessageSquare,
   },
 ]
 
