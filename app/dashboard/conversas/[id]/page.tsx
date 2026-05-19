@@ -8,19 +8,16 @@ export default async function ConversaPage({ params }: { params: { id: string } 
 
   if (!user) redirect('/auth/login')
 
-  const { data: conversation, error } = await supabase
+  const { data: conversation } = await supabase
     .from('conversations')
     .select(`
       *,
-      product:products(id, title, images:product_images(url, is_primary)),
+      product:products(id, title),
       buyer:profiles!conversations_buyer_id_fkey(id, name),
       seller:profiles!conversations_seller_id_fkey(id, name)
     `)
     .eq('id', params.id)
     .single()
-
-  console.log('conversation:', conversation)
-  console.log('error:', error)
 
   if (!conversation) redirect('/dashboard/conversas')
 
@@ -29,7 +26,7 @@ export default async function ConversaPage({ params }: { params: { id: string } 
 
   const { data: messages } = await supabase
     .from('messages')
-    .select('*, sender:profiles(id, name)')
+    .select('*, sender:profiles!messages_sender_id_fkey(id, name)')
     .eq('conversation_id', params.id)
     .order('created_at', { ascending: true })
 
