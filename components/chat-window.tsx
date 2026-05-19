@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +14,6 @@ interface Message {
   content: string
   sender_id: string
   created_at: string
-  sender: { id: string; name: string } | null
 }
 
 interface ChatWindowProps {
@@ -26,52 +26,7 @@ export function ChatWindow({ conversationId, initialMessages, currentUserId }: C
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [newMessage, setNewMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  useEffect(() => {
-    const channel = supabase
-      .channel(`conversation:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        async (payload) => {
-          const { data: senderData } = await supabase
-            .from('profiles')
-            .select('id, name')
-            .eq('id', payload.new.sender_id)
-            .single()
-
-          const newMsg: Message = {
-            id: payload.new.id,
-            content: payload.new.content,
-            sender_id: payload.new.sender_id,
-            created_at: payload.new.created_at,
-            sender: senderData || null,
-          }
-
-          setMessages((prev) => {
-            const exists = prev.find((m) => m.id === newMsg.id)
-            if (exists) return prev
-            return [...prev, newMsg]
-          })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [conversationId])
+  const router = useRouter()
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,18 +37,28 @@ export function ChatWindow({ conversationId, initialMessages, currentUserId }: C
     setNewMessage('')
 
     try {
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        content,
-      })
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content,
+        })
+        .select('id, content, sender_id, created_at')
+        .single()
 
       if (error) throw error
+
+      setMessages((prev) => [...prev, data])
 
       await supabase
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', conversationId)
+
+      router.refresh()
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
       setNewMessage(content)
@@ -104,7 +69,6 @@ export function ChatWindow({ conversationId, initialMessages, currentUserId }: C
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden rounded-lg border border-border">
-      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -136,10 +100,8 @@ export function ChatWindow({ conversationId, initialMessages, currentUserId }: C
             )
           })
         )}
-        <div ref={bottomRef} />
       </div>
 
-      {/* Input area */}
       <div className="border-t border-border p-3">
         <form onSubmit={handleSend} className="flex gap-2">
           <Input

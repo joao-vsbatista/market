@@ -10,12 +10,7 @@ export default async function ConversaPage({ params }: { params: { id: string } 
 
   const { data: conversation } = await supabase
     .from('conversations')
-    .select(`
-      *,
-      product:products(id, title),
-      buyer:profiles!conversations_buyer_id_fkey(id, name),
-      seller:profiles!conversations_seller_id_fkey(id, name)
-    `)
+    .select('*')
     .eq('id', params.id)
     .single()
 
@@ -24,21 +19,32 @@ export default async function ConversaPage({ params }: { params: { id: string } 
   const isParticipant = conversation.buyer_id === user.id || conversation.seller_id === user.id
   if (!isParticipant) redirect('/dashboard/conversas')
 
+  const otherId = conversation.buyer_id === user.id ? conversation.seller_id : conversation.buyer_id
+
+  const { data: otherProfile } = await supabase
+    .from('profiles')
+    .select('name')
+    .eq('id', otherId)
+    .single()
+
+  const { data: product } = await supabase
+    .from('products')
+    .select('title')
+    .eq('id', conversation.product_id)
+    .single()
+
   const { data: messages } = await supabase
     .from('messages')
-    .select('*, sender:profiles!messages_sender_id_fkey(id, name)')
+    .select('id, content, sender_id, created_at')
     .eq('conversation_id', params.id)
     .order('created_at', { ascending: true })
-
-  const isbuyer = conversation.buyer_id === user.id
-  const otherPerson = isbuyer ? conversation.seller : conversation.buyer
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-foreground">{conversation.product?.title}</h1>
+        <h1 className="text-xl font-bold text-foreground">{product?.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Conversa com {otherPerson?.name}
+          Conversa com {otherProfile?.name}
         </p>
       </div>
       <ChatWindow
