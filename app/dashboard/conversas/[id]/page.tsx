@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ChatWindow } from '@/components/chat-window'
 
-export default async function ConversaPage({ params }: { params: { id: string } }) {
+export default async function ConversaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -11,7 +12,7 @@ export default async function ConversaPage({ params }: { params: { id: string } 
   const { data: conversation } = await supabase
     .from('conversations')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!conversation) redirect('/dashboard/conversas')
@@ -36,7 +37,7 @@ export default async function ConversaPage({ params }: { params: { id: string } 
   const { data: messages } = await supabase
     .from('messages')
     .select('id, content, sender_id, created_at')
-    .eq('conversation_id', params.id)
+    .eq('conversation_id', id)
     .order('created_at', { ascending: true })
 
   return (
@@ -48,7 +49,7 @@ export default async function ConversaPage({ params }: { params: { id: string } 
         </p>
       </div>
       <ChatWindow
-        conversationId={params.id}
+        conversationId={id}
         initialMessages={messages || []}
         currentUserId={user.id}
       />
