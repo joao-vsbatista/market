@@ -1,0 +1,152 @@
+import { Suspense } from 'react'
+import { createClient } from '@/lib/supabase/server'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+import { ProductFilters } from '@/components/product-filters'
+import { Tag, Package } from 'lucide-react'
+import { formatCurrency } from '@/lib/formatters'
+import { PRODUCT_CONDITIONS } from '@/lib/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import Link from 'next/link'
+import Image from 'next/image'
+import type { ProductCondition } from '@/lib/types'
+
+interface VendasPageProps {
+  searchParams: Promise<{
+    q?: string
+    categoria?: string
+    condicao?: ProductCondition
+    estado?: string
+    preco_min?: string
+    preco_max?: string
+  }>
+}
+
+async function getSaleProducts(params: Awaited<VendasPageProps['searchParams']>) {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('products')
+    .select(`
+      *,
+      seller:profiles!products_seller_id_fkey(id, name, city, state),
+      images:product_images(id, url, is_primary)
+    `)
+    .eq('status', 'active')
+    .eq('type', 'sale')
+    .order('created_at', { ascending: false })
+
+  if (params.q) query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
+  if (params.categoria) query = query.eq('category', params.categoria)
+  if (params.condicao) query = query.eq('condition', params.condicao)
+  if (params.estado) query = query.eq('state', params.estado)
+  if (params.preco_min) query = query.gte('min_price', parseFloat(params.preco_min))
+  if (params.preco_max) query = query.lte('min_price', parseFloat(params.preco_max))
+
+  const { data } = await query.limit(50)
+  return data || []
+}
+
+function Loading() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="aspect-[4/3] rounded-lg bg-muted" />
+          <div className="mt-4 h-4 w-3/4 rounded bg-muted" />
+          <div className="mt-2 h-4 w-1/2 rounded bg-muted" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+async function SalesList({ params }: { params: Awaited<VendasPageProps['searchParams']> }) {
+  const products = await getSaleProducts(params)
+
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16">
+        <Package className="h-12 w-12 text-muted-foreground/50" />
+        <h3 className="mt-4 text-lg font-semibold text-foreground">Nenhum produto encontrado</h3>
+        <p className="mt-2 text-sm text-muted-foreground">Tente ajustar os filtros ou fazer uma nova busca</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {products.map((product: any) => {
+        const primaryImage = product.images?.find((img: any) => img.is_primary) || product.images?.[0]
+        return (
+          <Card key={product.id} className="overflow-hidden group hover:border-primary/50 transition-colors">
+            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+              {primaryImage ? (
+                <Image
+                  src={primaryImage.url}
+                  alt={product.title}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <Package className="h-12 w-12 text-muted-foreground/30" />
+                </div>
+              )}
+            </div>
+            <CardContent className="p-4">
+              <Badge variant="outline" className="mb-2 text-xs">
+                {PRODUCT_CONDITIONS[product.condition as keyof typeof PRODUCT_CONDITIONS]}
+              </Badge>
+              <h3 className="font-semibold text-foreground line-clamp-2 mb-1">{product.title}</h3>
+              {product.seller?.city && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  {product.seller.city}, {product.seller.state}
+                </p>
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-lg font-bold text-primary">{formatCurrency(product.min_price)}</p>
+                <Button asChild size="sm">
+                  <Link href={`/vendas/${product.id}`}>Ver produto</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+    </div>
+  )
+}
+
+export default async function VendasPage({ searchParams }: VendasPageProps) {
+  const params = await searchParams
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Tag className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Vendas</h1>
+              <p className="mt-1 text-muted-foreground">Produtos com preço fixo, compre agora</p>
+            </div>
+          </div>
+          <div className="mb-8">
+            <ProductFilters />
+          </div>
+          <Suspense fallback={<Loading />}>
+            <SalesList params={params} />
+          </Suspense>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
+}

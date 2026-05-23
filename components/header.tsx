@@ -11,9 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, Package, Gavel, Plus, Menu } from 'lucide-react'
+import { User, LogOut, Package, Gavel, Plus, Menu, ShoppingCart, Tag } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { NotificationBell } from '@/components/notification-bell'
 
 export function Header() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
@@ -22,7 +23,7 @@ export function Header() {
 
   useEffect(() => {
     const supabase = createClient()
-    
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setLoading(false)
@@ -52,13 +53,21 @@ export function Header() {
             </div>
             <span className="text-xl font-bold text-foreground">ReCicloMarket</span>
           </Link>
-          
+
           <nav className="hidden items-center gap-6 md:flex">
-            <Link 
-              href="/produtos" 
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            <Link
+              href="/leiloes"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Produtos
+              <Gavel className="h-4 w-4" />
+              Leilões
+            </Link>
+            <Link
+              href="/vendas"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Tag className="h-4 w-4" />
+              Vendas
             </Link>
           </nav>
         </div>
@@ -74,7 +83,15 @@ export function Header() {
                   Anunciar
                 </Link>
               </Button>
-              
+
+              <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
+                <Link href="/carrinho">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              <NotificationBell userId={user.id} />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -92,6 +109,12 @@ export function Header() {
                     <Link href="/produtos/novo">
                       <Plus className="mr-2 h-4 w-4" />
                       Anunciar
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="sm:hidden">
+                    <Link href="/carrinho">
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Carrinho
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

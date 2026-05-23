@@ -12,6 +12,8 @@ export interface Profile {
 }
 
 export interface Product {
+  accepts_trade: boolean | undefined
+  accepts_cash: boolean | undefined
   id: string
   seller_id: string
   title: string

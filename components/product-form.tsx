@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/image-upload'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Gavel, Tag } from 'lucide-react'
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, BRAZILIAN_STATES } from '@/lib/types'
 import type { ProductCondition } from '@/lib/types'
 
@@ -42,6 +42,7 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
   const [state, setState] = useState(userState || '')
   const [acceptsCash, setAcceptsCash] = useState(true)
   const [acceptsTrade, setAcceptsTrade] = useState(false)
+  const [type, setType] = useState<'auction' | 'sale'>('auction')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,6 +81,7 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
           state,
           accepts_cash: acceptsCash,
           accepts_trade: acceptsTrade,
+          type,
         })
         .select()
         .single()
@@ -213,6 +215,40 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
 
       <Card>
   <CardHeader>
+    <CardTitle>Tipo de Anúncio</CardTitle>
+  </CardHeader>
+  <CardContent className="grid grid-cols-2 gap-4">
+    <button
+      type="button"
+      onClick={() => setType('auction')}
+      className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
+        type === 'auction'
+          ? 'border-primary bg-primary/5'
+          : 'border-border hover:border-primary/50'
+      }`}
+    >
+      <Gavel className="h-6 w-6 text-primary" />
+      <p className="font-medium text-sm">Leilão</p>
+      <p className="text-xs text-muted-foreground text-center">Receba lances e escolha a melhor oferta</p>
+    </button>
+    <button
+      type="button"
+      onClick={() => setType('sale')}
+      className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
+        type === 'sale'
+          ? 'border-primary bg-primary/5'
+          : 'border-border hover:border-primary/50'
+      }`}
+    >
+      <Tag className="h-6 w-6 text-primary" />
+      <p className="font-medium text-sm">Venda Direta</p>
+      <p className="text-xs text-muted-foreground text-center">Preço fixo, compra pelo carrinho</p>
+    </button>
+  </CardContent>
+</Card>
+    {type === 'auction' && (
+      <Card>
+  <CardHeader>
     <CardTitle>Formas de Lance Aceitas</CardTitle>
   </CardHeader>
   <CardContent className="space-y-4">
@@ -238,6 +274,7 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
     </div>
   </CardContent>
 </Card>
+    )}
 
       <Card>
         <CardHeader>
