@@ -14,6 +14,9 @@ import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/formatters
 import { PRODUCT_CONDITIONS, PRODUCT_CATEGORIES } from '@/lib/types'
 import type { Product, Bid } from '@/lib/types'
 import { BidActions } from '@/components/bid-actions'
+import { Breadcrumb } from '@/components/breadcrumb'
+import { ReviewForm } from '@/components/review-form'
+import { ReviewStars } from '@/components/review-stars'
 
 interface ProductPageProps {
   params: Promise<{ id: string }>
@@ -104,6 +107,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
       
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Breadcrumb items={[
+          { label: 'Leilões', href: '/leiloes' },
+          { label: product.title }
+]} />
           <Button asChild variant="ghost" className="mb-6">
             <Link href="/produtos">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -159,20 +166,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <Separator />
               
               {/* Seller info */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <User className="h-4 w-4" />
-                    Vendedor
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-medium text-foreground">{product.seller?.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {product.seller?.city}, {product.seller?.state}
-                  </p>
-                </CardContent>
-              </Card>
+<Card>
+  <CardHeader className="pb-3">
+    <CardTitle className="flex items-center gap-2 text-base">
+      <User className="h-4 w-4" />
+      Vendedor
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Link
+      href={`/vendedor/${product.seller_id}`}
+      className="font-medium text-foreground hover:text-primary transition-colors"
+    >
+      {product.seller?.name}
+    </Link>
+    <p className="text-sm text-muted-foreground">
+      {product.seller?.city}, {product.seller?.state}
+    </p>
+    <Button asChild variant="outline" size="sm" className="mt-3 w-full">
+      <Link href={`/vendedor/${product.seller_id}`}>
+        Ver perfil do vendedor
+      </Link>
+    </Button>
+  </CardContent>
+</Card>
               
               {/* Show accepted bid contact info */}
               {userAcceptedBid && (
@@ -197,6 +214,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Avaliação pós-venda */}
+{userAcceptedBid && (
+  <ReviewForm
+    productId={product.id}
+    reviewedId={product.seller_id}
+    reviewerId={user!.id}
+    reviewedName={product.seller?.name || 'Vendedor'}
+  />
+)}
               
               {/* User's pending bid */}
               {userPendingBid && !userAcceptedBid && (

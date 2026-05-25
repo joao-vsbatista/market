@@ -10,6 +10,9 @@ import { formatCurrency } from '@/lib/formatters'
 import { PRODUCT_CONDITIONS } from '@/lib/types'
 import { AddToCartButton } from '@/components/add-to-cart-button'
 import { ProductMessageForm } from '@/components/product-message-form'
+import { Breadcrumb } from '@/components/breadcrumb'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default async function VendaProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -39,6 +42,10 @@ export default async function VendaProductPage({ params }: { params: Promise<{ i
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Breadcrumb items={[
+          { label: 'Vendas', href: '/vendas' },
+          { label: product.title }
+]} />
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Imagens */}
             <div className="space-y-4">
@@ -118,23 +125,33 @@ export default async function VendaProductPage({ params }: { params: Promise<{ i
               )}
 
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Vendedor</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{product.seller?.name || 'Vendedor'}</p>
-                      {product.seller?.city && (
-                        <p className="text-sm text-muted-foreground">{product.seller.city}, {product.seller.state}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+  <CardHeader>
+    <CardTitle className="text-base">Vendedor</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+        <User className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <Link
+          href={`/vendedor/${product.seller_id}`}
+          className="font-medium hover:text-primary transition-colors"
+        >
+          {product.seller?.name || 'Vendedor'}
+        </Link>
+        {product.seller?.city && (
+          <p className="text-sm text-muted-foreground">{product.seller.city}, {product.seller.state}</p>
+        )}
+      </div>
+    </div>
+    <Button asChild variant="outline" size="sm" className="mt-3 w-full">
+      <Link href={`/vendedor/${product.seller_id}`}>
+        Ver perfil do vendedor
+      </Link>
+    </Button>
+  </CardContent>
+</Card>
 
               <ProductMessageForm
                 productId={product.id}

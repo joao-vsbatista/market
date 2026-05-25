@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/product-card'
 import { ProductFilters } from '@/components/product-filters'
 import { Gavel, Package } from 'lucide-react'
 import type { Product, ProductCondition } from '@/lib/types'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 interface LeiloesPageProps {
   searchParams: Promise<{
@@ -58,14 +59,8 @@ async function getAuctions(params: Awaited<LeiloesPageProps['searchParams']>): P
 
 function Loading() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="animate-pulse">
-          <div className="aspect-[4/3] rounded-lg bg-muted" />
-          <div className="mt-4 h-4 w-3/4 rounded bg-muted" />
-          <div className="mt-2 h-4 w-1/2 rounded bg-muted" />
-        </div>
-      ))}
+    <div className="flex items-center justify-center py-24">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
     </div>
   )
 }
@@ -100,6 +95,10 @@ export default async function LeiloesPage({ searchParams }: LeiloesPageProps) {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+          {/* ✅ BREADCRUMB ADICIONADO AQUI */}
+          <Breadcrumb items={[{ label: 'Leilões' }]} />
+
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <Gavel className="h-5 w-5 text-primary" />

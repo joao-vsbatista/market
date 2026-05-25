@@ -62,13 +62,23 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Olá, {stats.name}!
-          </h1>
-          <p className="text-muted-foreground">
-            Bem-vindo ao seu painel de controle
-          </p>
-        </div>
+  <h1 className="text-2xl font-bold text-foreground">
+    {new Date().getHours() < 12
+      ? ' Bom dia'
+      : new Date().getHours() < 18
+      ? ' Boa tarde'
+      : ' Boa noite'}, {stats.name}!
+  </h1>
+  <p className="text-muted-foreground">
+    {stats.receivedBids > 0
+      ? `Você tem ${stats.receivedBids} lance(s) esperando sua resposta.`
+      : stats.pendingBids > 0
+      ? `Você tem ${stats.pendingBids} lance(s) aguardando resposta do vendedor.`
+      : stats.activeProducts > 0
+      ? `Você tem ${stats.activeProducts} produto(s) ativo(s) no momento.`
+      : 'Que tal criar seu primeiro anúncio hoje?'}
+  </p>
+</div>
         <Button asChild>
           <Link href="/produtos/novo">
             <Plus className="mr-2 h-4 w-4" />

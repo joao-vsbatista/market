@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { ProductCondition } from '@/lib/types'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 interface VendasPageProps {
   searchParams: Promise<{
@@ -51,14 +52,8 @@ async function getSaleProducts(params: Awaited<VendasPageProps['searchParams']>)
 
 function Loading() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="animate-pulse">
-          <div className="aspect-[4/3] rounded-lg bg-muted" />
-          <div className="mt-4 h-4 w-3/4 rounded bg-muted" />
-          <div className="mt-2 h-4 w-1/2 rounded bg-muted" />
-        </div>
-      ))}
+    <div className="flex items-center justify-center py-24">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
     </div>
   )
 }
@@ -129,6 +124,7 @@ export default async function VendasPage({ searchParams }: VendasPageProps) {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Breadcrumb items={[{ label: 'Vendas' }]} />
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <Tag className="h-5 w-5 text-primary" />

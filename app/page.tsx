@@ -11,6 +11,7 @@ import { formatCurrency } from '@/lib/formatters'
 import { PRODUCT_CONDITIONS } from '@/lib/types'
 import Image from 'next/image'
 import type { Product } from '@/lib/types'
+import { StatsCounter } from '@/components/stats-counter'
 
 async function getRecentAuctions(): Promise<Product[]> {
   const supabase = await createClient()
@@ -61,8 +62,28 @@ async function getRecentSales() {
   return data || []
 }
 
+async function getStats() {
+  const supabase = await createClient()
+
+  const [{ count: products }, { count: users }, { count: deals }] = await Promise.all([
+    supabase.from('products').select('*', { count: 'exact', head: true }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('bids').select('*', { count: 'exact', head: true }).eq('status', 'accepted'),
+  ])
+
+  return {
+    products: products || 0,
+    users: users || 0,
+    deals: deals || 0,
+  }
+}
+
 export default async function HomePage() {
-  const [auctions, sales] = await Promise.all([getRecentAuctions(), getRecentSales()])
+  const [auctions, sales, stats] = await Promise.all([
+    getRecentAuctions(),
+    getRecentSales(),
+    getStats(),
+  ])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -98,6 +119,13 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Contador animado */}
+        <StatsCounter
+          products={stats.products}
+          users={stats.users}
+          deals={stats.deals}
+        />
 
         {/* Features */}
         <section className="border-y border-border bg-muted/30 py-16">

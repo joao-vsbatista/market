@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Package } from 'lucide-react'
 import Image from 'next/image'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 const statusLabel: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   available: { label: 'Disponível', variant: 'default' },
@@ -27,6 +28,13 @@ export default async function InventarioPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* ✅ BREADCRUMB ADICIONADO AQUI */}
+      <Breadcrumb items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Meu Inventário' }
+      ]} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Meu Inventário</h1>

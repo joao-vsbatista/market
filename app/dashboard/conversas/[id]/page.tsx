@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ChatWindow } from '@/components/chat-window'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 export default async function ConversaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -42,6 +43,14 @@ export default async function ConversaPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
+
+      {/* ✅ BREADCRUMB ADICIONADO AQUI */}
+      <Breadcrumb items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Conversas', href: '/dashboard/conversas' },
+        { label: product?.title || 'Conversa' }
+      ]} />
+
       <div className="mb-4">
         <h1 className="text-xl font-bold text-foreground">{product?.title}</h1>
         <p className="text-sm text-muted-foreground">
