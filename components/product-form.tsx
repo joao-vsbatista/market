@@ -19,8 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/image-upload'
 import { toast } from 'sonner'
 import { Loader2, Gavel, Tag } from 'lucide-react'
-import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, BRAZILIAN_STATES } from '@/lib/types'
+//import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, BRAZILIAN_STATES } from '@/lib/types'
+import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS } from '@/lib/types'
 import type { ProductCondition } from '@/lib/types'
+import { CitySearch } from '@/components/city-search'
 
 interface ProductFormProps {
   userId: string
@@ -277,39 +279,18 @@ export function ProductForm({ userId, userCity, userState }: ProductFormProps) {
     )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Localização</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="city">Cidade *</Label>
-              <Input
-                id="city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Sua cidade"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Estado *</Label>
-              <Select value={state} onValueChange={setState} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="UF" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BRAZILIAN_STATES.map((uf) => (
-                    <SelectItem key={uf} value={uf}>
-                      {uf}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+  <CardHeader>
+    <CardTitle>Localização</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <CitySearch
+      city={city}
+      state={state}
+      onCityChange={setCity}
+      onStateChange={setState}
+    />
+  </CardContent>
+</Card>
 
       <div className="flex justify-end gap-4">
         <Button 
