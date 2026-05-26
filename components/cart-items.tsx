@@ -19,7 +19,6 @@ interface CartItemsProps {
 }
 
 export function CartItems({ items, total, userId }: CartItemsProps) {
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -40,59 +39,6 @@ export function CartItems({ items, total, userId }: CartItemsProps) {
       toast.error('Erro ao remover item')
     } finally {
       setRemovingId(null)
-    }
-  }
-
-  const handleCheckout = async () => {
-    setIsCheckingOut(true)
-    try {
-      const supabase = createClient()
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({ buyer_id: userId, total })
-        .select()
-        .single()
-
-      if (orderError) throw orderError
-
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        price: item.product.min_price,
-        quantity: item.quantity,
-      }))
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
-
-      if (itemsError) throw itemsError
-
-      // Marcar produtos como vendidos
-      await Promise.all(
-        items.map((item) =>
-          supabase
-            .from('products')
-            .update({ status: 'sold' })
-            .eq('id', item.product_id)
-        )
-      )
-
-      // Limpar carrinho
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', userId)
-
-      toast.success('Pedido realizado com sucesso!')
-      router.push('/dashboard')
-      router.refresh()
-    } catch (error) {
-      console.error(error)
-      toast.error('Erro ao finalizar pedido.')
-    } finally {
-      setIsCheckingOut(false)
     }
   }
 
@@ -183,21 +129,12 @@ export function CartItems({ items, total, userId }: CartItemsProps) {
               <span>Total</span>
               <span className="text-primary">{formatCurrency(total)}</span>
             </div>
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleCheckout}
-              disabled={isCheckingOut}
-            >
-              {isCheckingOut ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Finalizando...
-                </>
-              ) : (
-                'Finalizar Pedido'
-              )}
+
+            {/* ✅ ALTERAÇÃO: botão agora redireciona para o checkout */}
+            <Button asChild className="w-full" size="lg">
+              <Link href="/checkout">Ir para o Checkout</Link>
             </Button>
+
             <Button asChild variant="outline" className="w-full">
               <Link href="/vendas">Continuar comprando</Link>
             </Button>
